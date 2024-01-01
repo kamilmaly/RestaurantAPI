@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using RestaurantAPI.Entities;
+﻿using RestaurantAPI.Entities;
 using System.Collections.Generic;
 using System.Linq;
 
