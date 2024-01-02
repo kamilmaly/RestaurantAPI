@@ -1,6 +1,7 @@
 using AutoMapper;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using RestaurantAPI.Authorization;
 using RestaurantAPI.Entities;
 using RestaurantAPI.Entities.Validators;
 using RestaurantAPI.Middleware;
@@ -57,11 +59,13 @@ namespace RestaurantAPI
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationSettings.JwtKey)),
                 };
             });
-            services.AddAuthorization(option =>
+            services.AddAuthorization(options =>
             {
-                option.AddPolicy("HasNationality", builder => builder.RequireClaim("Nationality","Poland"));
+                options.AddPolicy("HasNationality", builder => builder.RequireClaim("Nationality","Poland"));
+                options.AddPolicy("Atleast20", builder => builder.AddRequirements(new MinimumAgeRequirement(20)));
             });
 
+            services.AddScoped<IAuthorizationHandler, MinimumAgeRequirementHandler>();
             services.AddControllers().AddFluentValidation();
             services.AddControllers();
             services.AddDbContext<RestaurantDbContext>();
