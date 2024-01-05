@@ -10,27 +10,28 @@ namespace RestaurantAPI.Middleware
     public class TimeHandlingMiddleware : IMiddleware
     {
         private readonly ILogger<TimeHandlingMiddleware> _logger;
-        private Stopwatch _stopwatch;
+        private Stopwatch _stopWatch;
 
         public TimeHandlingMiddleware(ILogger<TimeHandlingMiddleware> logger)
         {
             _logger = logger;
-            _stopwatch = new Stopwatch();
+            _stopWatch = new Stopwatch();
         }
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             try
             {
-                _stopwatch.Start();
+                _stopWatch.Start();
                 await next.Invoke(context);
-                _stopwatch.Stop();
-                var time = _stopwatch.Elapsed;
+                _stopWatch.Stop();
 
-                TimeSpan timeLimit = TimeSpan.FromMilliseconds(200);
-
-                if (time > timeLimit)
+                var elapsedMilliseconds = _stopWatch.ElapsedMilliseconds;
+                if (elapsedMilliseconds / 1000 > 4)
                 {
-                    _logger.LogWarning($"Request too long > 200 Milliseconds: {time} - {context.Request.Path} - {context.Request.Method}");
+                    var message =
+                        $"Request [{context.Request.Method}] at {context.Request.Path} took {elapsedMilliseconds} ms";
+
+                    _logger.LogInformation(message);
                 }
 
             }
