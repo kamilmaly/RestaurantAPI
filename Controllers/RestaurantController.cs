@@ -24,8 +24,8 @@ namespace RestaurantAPI.Controllers
             _restaurantService = restaurantService;
         }
         [HttpGet]
-        //[Authorize(Policy = "Atleast20")]
-        [AllowAnonymous]
+        [Authorize(Policy = "MultipleRestaurants")]
+        //[AllowAnonymous]
         public ActionResult<IEnumerable<RestaurantDto>> GetAll()
         {
 

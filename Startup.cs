@@ -63,10 +63,12 @@ namespace RestaurantAPI
             {
                 options.AddPolicy("HasNationality", builder => builder.RequireClaim("Nationality"));
                 options.AddPolicy("Atleast20", builder => builder.AddRequirements(new MinimumAgeRequirement(20)));
+                options.AddPolicy("MultipleRestaurants", builder => builder.AddRequirements(new MultipleRestaurantsRequirement(2)));
             });
 
             services.AddScoped<IAuthorizationHandler, MinimumAgeRequirementHandler>();
             services.AddScoped<IAuthorizationHandler, ResourceOperationRequirementHandler>();
+            services.AddScoped<IAuthorizationHandler, MultipleRestaurantsRequirementHandler>();
             services.AddControllers().AddFluentValidation();
             services.AddControllers();
             services.AddDbContext<RestaurantDbContext>();
