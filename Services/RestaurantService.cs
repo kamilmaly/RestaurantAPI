@@ -17,7 +17,7 @@ namespace RestaurantAPI.Services
     public interface IRestaurantService
     {
         int Create(CreateRestaurantDto dto);
-        IEnumerable<RestaurantDto> GetAll(string searchPhrase);
+        PagedResult<RestaurantDto> GetAll(RestaurantQuery restaurantQuery);
         RestaurantDto GetById(int id);
 
         void Put(PutRestaurantDto dto,int id);
@@ -109,19 +109,28 @@ namespace RestaurantAPI.Services
             return restaurantsDtos;
         }
 
-        public IEnumerable<RestaurantDto> GetAll(string searchPhrase)
+        public PagedResult<RestaurantDto> GetAll(RestaurantQuery restaurantQuery)
         {
-            var restaurants = _dbContext
+            var baseQuery = _dbContext
                 .Restaurants
                 .Include(r => r.Address)
                 .Include(r => r.Dishes)
-                .Where(r=> searchPhrase == null || (r.Name.ToLower().Contains(searchPhrase.ToLower()) 
-                || r.Description.ToLower().Contains(searchPhrase.ToLower())))
+                .Where(r => restaurantQuery.SearchPhrase == null || (r.Name.ToLower().Contains(restaurantQuery.SearchPhrase.ToLower())
+                || r.Description.ToLower().Contains(restaurantQuery.SearchPhrase.ToLower())));
+
+
+            var restaurants = baseQuery
+                .Skip(restaurantQuery.PageSize * (restaurantQuery.PageNumber - 1))
+                .Take(restaurantQuery.PageSize)
                 .ToList();
+
+            var totalItemsCount = baseQuery.Count();
 
             var restaurantsDtos = _mapper.Map<List<RestaurantDto>>(restaurants);
 
-            return restaurantsDtos;
+            var result = new PagedResult<RestaurantDto>(restaurantsDtos,totalItemsCount,restaurantQuery.PageSize,restaurantQuery.PageNumber);
+
+            return result;
         }
 
         public int Create(CreateRestaurantDto dto)
