@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -40,7 +41,7 @@ namespace RestaurantAPI
         public void ConfigureServices(IServiceCollection services)
         {
             var authenticationSettings = new AuthenticationSettings();
-            
+
             Configuration.GetSection("Authentication").Bind(authenticationSettings);
             services.AddSingleton(authenticationSettings);
             services.AddAuthentication(option =>
@@ -71,29 +72,32 @@ namespace RestaurantAPI
             services.AddScoped<IAuthorizationHandler, MultipleRestaurantsRequirementHandler>();
             services.AddControllers().AddFluentValidation();
             services.AddControllers();
-            services.AddDbContext<RestaurantDbContext>();
             services.AddScoped<RestaurantSeeder>();
             services.AddAutoMapper(this.GetType().Assembly);
-            services.AddScoped<IRestaurantService,RestaurantService>();
+            services.AddScoped<IRestaurantService, RestaurantService>();
             services.AddScoped<IDishService, DishService>();
             services.AddScoped<IAccountService, AccountService>();
-            services.AddScoped<IPasswordHasher<User>,PasswordHasher<User>>();
+            services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
             services.AddScoped<IValidator<RegisterUserDto>, RegisterUserDtoValidator>();
             services.AddScoped<IValidator<RestaurantQuery>, RestaurantQueryValidator>();
             services.AddScoped<ErrorHandlingMiddleware>();
             services.AddScoped<TimeHandlingMiddleware>();
-            services.AddScoped<IUserContextService,UserContextService>();
+            services.AddScoped<IUserContextService, UserContextService>();
             services.AddHttpContextAccessor();
             services.AddSwaggerGen();
-            services.AddCors(option =>
+            services.AddCors(options =>
             {
-                option.AddPolicy("FrontEndClient", builder =>
+                options.AddPolicy("FrontEndClient", builder =>
 
                 builder.AllowAnyOrigin()
                 .AllowAnyMethod()
                 .WithOrigins(Configuration["AllowedOrigins"])
                 );
             });
+            services.AddDbContext<RestaurantDbContext>(
+                options => options.UseSqlServer(Configuration.GetConnectionString("RestaurantDbConnection")));
+                    
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
