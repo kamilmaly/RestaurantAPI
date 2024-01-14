@@ -34,7 +34,7 @@ namespace RestaurantAPI.Controllers
 
             return Ok(restaurantsDtos);
         }
-
+        //Delete method
         [HttpDelete("{id}")]
         public ActionResult Delete([FromRoute] int id)
         {
